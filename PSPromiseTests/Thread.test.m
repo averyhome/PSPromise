@@ -27,189 +27,106 @@
 
 - (void)test1{
     id ex1 = [self expectationWithDescription:@""];
-    PSPromise(^{
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)test2{
     id ex1 = [self expectationWithDescription:@""];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        PSPromise(^{
-            XCTAssertEqual([NSThread currentThread].isMainThread, NO);
-            [ex1 fulfill];
-        });
-    });
-    
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test3{
-    id ex1 = [self expectationWithDescription:@""];
-    
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
-        [ex1 fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test4{
-    id ex1 = [self expectationWithDescription:@""];
-    
-    dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        PSSyncPromise(^(PSResolver  _Nonnull resolver) {
+        PSPROMISE(^(PSResolve  _Nonnull resolve) {
             XCTAssertEqual([NSThread currentThread].isMainThread, YES);
             [ex1 fulfill];
         });
     });
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+- (void)test3{
+    id ex1 = [self expectationWithDescription:@""];
+    
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        resolve(@"abc");
+    }).then(^(NSString *result){
+        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
+        [ex1 fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+- (void)test4{
+    id ex1 = [self expectationWithDescription:@""];
+    
+    dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        PSPROMISE(^(PSResolve  _Nonnull resolve) {
+            resolve(@"abc");
+        }).then(^(NSString *result){
+            XCTAssertEqual([NSThread currentThread].isMainThread, YES);
+            [ex1 fulfill];
+        });
+    });
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 - (void)test5{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-        XCTAssertEqual([NSThread currentThread].isMainThread, NO);
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            resolve(@"success");
+        });
+    }).then(^(NSString *result){
+        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
+
 - (void)test6{
     id ex1 = [self expectationWithDescription:@""];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-            XCTAssertEqual([NSThread currentThread].isMainThread, NO);
-            [ex1 fulfill];
+    
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            resolve([NSError errorWithDomain:@"cn.yerl.promise.error" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"测试错误"}]);
         });
+    }).catch(^(NSError *error){
+        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
+        [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 - (void)test7{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).then(^{
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            resolve([NSError errorWithDomain:@"cn.yerl.promise.error" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"测试错误"}]);
+        });
+    }).finally(^{
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 - (void)test8{
     id ex1 = [self expectationWithDescription:@""];
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).thenSync(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test9{
-    id ex1 = [self expectationWithDescription:@""];
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).thenAsync(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, NO);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test10{
-    id ex1 = [self expectationWithDescription:@""];
-    dispatch_queue_t queue = dispatch_queue_create("cn.yerl.promise.thread", DISPATCH_QUEUE_CONCURRENT);
     
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).thenOn(queue, ^{
-        XCTAssert([@(dispatch_queue_get_label(dispatch_get_current_queue())) isEqualToString:@"cn.yerl.promise.thread"]);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test11{
-    id ex1 = [self expectationWithDescription:@""];
-    PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).then(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, NO);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test12{
-    id ex1 = [self expectationWithDescription:@""];
-    PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).thenSync(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test13{
-    id ex1 = [self expectationWithDescription:@""];
-    PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).thenAsync(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, NO);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test14{
-    id ex1 = [self expectationWithDescription:@""];
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            resolve(@"success");
+        });
     }).finally(^{
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}- (void)test15{
-    id ex1 = [self expectationWithDescription:@""];
-    dispatch_queue_t queue = dispatch_queue_create("cn.yerl.promise.thread", DISPATCH_QUEUE_CONCURRENT);
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).finallyOn(queue, ^{
-        XCTAssert([@(dispatch_queue_get_label(dispatch_get_current_queue())) isEqualToString:@"cn.yerl.promise.thread"]);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test16{
-    id ex1 = [self expectationWithDescription:@""];
-    PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver(nil);
-    }).finally(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-- (void)test17{
-    id ex1 = [self expectationWithDescription:@""];
-    PSAsyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver([NSError errorWithDomain:@"cn.yerl.promise" code:-1000 userInfo:@{}]);
-    }).catch(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
-- (void)test18{
-    id ex1 = [self expectationWithDescription:@""];
-    PSSyncPromise(^(PSResolver  _Nonnull resolver) {
-        resolver([NSError errorWithDomain:@"cn.yerl.promise" code:-1000 userInfo:@{}]);
-    }).catch(^{
-        XCTAssertEqual([NSThread currentThread].isMainThread, YES);
-        [ex1 fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
 @end

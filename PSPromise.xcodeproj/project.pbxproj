@@ -25,8 +25,7 @@
 		1D5000461C71BE17003FD639 /* PSPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D5000451C71BE17003FD639 /* PSPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1D50004D1C71BE17003FD639 /* PSPromise.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D5000421C71BE17003FD639 /* PSPromise.framework */; };
 		1D5000521C71BE17003FD639 /* PSPromise.test.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D5000511C71BE17003FD639 /* PSPromise.test.m */; };
-		1D50005E1C71BE96003FD639 /* PSPromiseContext.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D50005C1C71BE96003FD639 /* PSPromiseContext.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		1D50005F1C71BE96003FD639 /* PSPromiseContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D50005D1C71BE96003FD639 /* PSPromiseContext.m */; };
+		5D0C0AB11C7938320025F356 /* PSPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D0C0AAF1C7938320025F356 /* PSPromise.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -47,8 +46,7 @@
 		1D50004C1C71BE17003FD639 /* PSPromiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PSPromiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D5000511C71BE17003FD639 /* PSPromise.test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PSPromise.test.m; sourceTree = "<group>"; };
 		1D5000531C71BE17003FD639 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1D50005C1C71BE96003FD639 /* PSPromiseContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PSPromiseContext.h; sourceTree = "<group>"; };
-		1D50005D1C71BE96003FD639 /* PSPromiseContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSPromiseContext.m; sourceTree = "<group>"; };
+		5D0C0AAF1C7938320025F356 /* PSPromise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSPromise.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -91,10 +89,9 @@
 		1D5000441C71BE17003FD639 /* PSPromise */ = {
 			isa = PBXGroup;
 			children = (
-				1D5000451C71BE17003FD639 /* PSPromise.h */,
 				1D5000471C71BE17003FD639 /* Info.plist */,
-				1D50005C1C71BE96003FD639 /* PSPromiseContext.h */,
-				1D50005D1C71BE96003FD639 /* PSPromiseContext.m */,
+				1D5000451C71BE17003FD639 /* PSPromise.h */,
+				5D0C0AAF1C7938320025F356 /* PSPromise.m */,
 			);
 			path = PSPromise;
 			sourceTree = "<group>";
@@ -116,7 +113,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1D50005E1C71BE96003FD639 /* PSPromiseContext.h in Headers */,
 				1D5000461C71BE17003FD639 /* PSPromise.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -237,7 +233,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1D50005F1C71BE96003FD639 /* PSPromiseContext.m in Sources */,
+				5D0C0AB11C7938320025F356 /* PSPromise.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -429,6 +425,7 @@
 				1D2A90121C77179B002B7FA1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1D50003C1C71BE17003FD639 /* Build configuration list for PBXProject "PSPromise" */ = {
 			isa = XCConfigurationList;
