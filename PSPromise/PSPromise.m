@@ -143,7 +143,13 @@ static inline PSPromise *PromiseWith(PSPromise *self, void(^then)(id, PSResolve)
     return ^(void (^resolver)(id, PSResolve)){
         return PSPROMISE(^(PSResolve resolve) {
             [self pipe:^(id result) {
-                resolver(result, resolve);
+                if (!isRejected(result)) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        resolver(result, resolve);
+                    });
+                }else{
+                    resolve(result);
+                }
             }];
         });
     };

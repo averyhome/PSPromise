@@ -72,6 +72,29 @@
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
+- (void)testThen2{
+    id ex1 = [self expectationWithDescription:@""];
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            resolve(@"AsyncTask completed");
+        });
+    }).then(^(NSString *result){
+        XCTAssert([result isEqualToString:@"AsyncTask completed"]);
+        return PSPROMISE(^(PSResolve  _Nonnull resolve) {
+            resolve([result stringByAppendingString:@"123"]);
+        }).then(^{
+            return @"123";
+        });
+    }).then(^(NSString *result){
+        XCTAssert([result isEqualToString:@"123"]);
+    }).catch(^{
+        XCTAssert(NO, @"这里不该执行");
+    }).finally(^{
+        [ex1 fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
 - (void)testFinally1{
     id ex1 = [self expectationWithDescription:@""];
     PSPROMISE(^(PSResolve  _Nonnull resolve) {
@@ -98,6 +121,27 @@
         XCTAssert(NO, @"这里不该执行");
     }).catch(^(NSError *error){
         XCTAssert(error!= nil);
+    }).finally(^{
+        [ex1 fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testFinally3{
+    id ex1 = [self expectationWithDescription:@""];
+    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+            resolve(@"AsyncTask completed");
+        });
+    }).then(^(NSString *result){
+        XCTAssert([result isEqualToString:@"AsyncTask completed"]);
+        return PSPROMISE(^(PSResolve  _Nonnull resolve) {
+            resolve([result stringByAppendingString:@"123"]);
+        }).then(^{
+            return @"123";
+        });
+    }).catch(^{
+        XCTAssert(NO, @"这里不该执行");
     }).finally(^{
         [ex1 fulfill];
     });
