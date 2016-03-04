@@ -27,7 +27,7 @@
 
 - (void)test1{
     id ex1 = [self expectationWithDescription:@""];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
@@ -37,7 +37,7 @@
 - (void)test2{
     id ex1 = [self expectationWithDescription:@""];
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
             XCTAssertEqual([NSThread currentThread].isMainThread, YES);
             [ex1 fulfill];
         });
@@ -48,7 +48,7 @@
 - (void)test3{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         resolve(@"abc");
     }).then(^(NSString *result){
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
@@ -61,7 +61,7 @@
     id ex1 = [self expectationWithDescription:@""];
     
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
-        PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
             resolve(@"abc");
         }).then(^(NSString *result){
             XCTAssertEqual([NSThread currentThread].isMainThread, YES);
@@ -74,7 +74,7 @@
 - (void)test5{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve(@"success");
         });
@@ -89,7 +89,7 @@
 - (void)test6{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve([NSError errorWithDomain:@"cn.yerl.promise.error" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"测试错误"}]);
         });
@@ -103,7 +103,7 @@
 - (void)test7{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve([NSError errorWithDomain:@"cn.yerl.promise.error" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"测试错误"}]);
         });
@@ -117,7 +117,7 @@
 - (void)test8{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve(@"success");
         });

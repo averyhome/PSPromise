@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		1D2A900F1C76B029002B7FA1 /* Thread.test.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D2A900E1C76B029002B7FA1 /* Thread.test.m */; };
+		1D400F551C896598004EDC8D /* Error.test.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D400F541C896598004EDC8D /* Error.test.m */; };
 		1D5000461C71BE17003FD639 /* PSPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D5000451C71BE17003FD639 /* PSPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1D50004D1C71BE17003FD639 /* PSPromise.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D5000421C71BE17003FD639 /* PSPromise.framework */; };
 		1D5000521C71BE17003FD639 /* PSPromise.test.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D5000511C71BE17003FD639 /* PSPromise.test.m */; };
@@ -40,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		1D2A900E1C76B029002B7FA1 /* Thread.test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Thread.test.m; sourceTree = "<group>"; };
+		1D400F541C896598004EDC8D /* Error.test.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Error.test.m; sourceTree = "<group>"; };
 		1D5000421C71BE17003FD639 /* PSPromise.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = PSPromise.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D5000451C71BE17003FD639 /* PSPromise.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = PSPromise.h; sourceTree = "<group>"; };
 		1D5000471C71BE17003FD639 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -102,6 +104,7 @@
 				1D5000531C71BE17003FD639 /* Info.plist */,
 				1D5000511C71BE17003FD639 /* PSPromise.test.m */,
 				1D2A900E1C76B029002B7FA1 /* Thread.test.m */,
+				1D400F541C896598004EDC8D /* Error.test.m */,
 			);
 			path = PSPromiseTests;
 			sourceTree = "<group>";
@@ -242,6 +245,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1D400F551C896598004EDC8D /* Error.test.m in Sources */,
 				1D5000521C71BE17003FD639 /* PSPromise.test.m in Sources */,
 				1D2A900F1C76B029002B7FA1 /* Thread.test.m in Sources */,
 			);

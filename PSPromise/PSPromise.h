@@ -14,9 +14,9 @@ NS_ASSUME_NONNULL_BEGIN
 typedef void (^PSResolve)(id __nullable result);
 
 typedef NS_ENUM(NSUInteger, PSPromiseState) {
-    PSPromiseStatePending,
-    PSPromiseStateFulfilled,
-    PSPromiseStateRejected
+    PSPromiseStatePending = 1 << 0,
+    PSPromiseStateFulfilled = 1 << 1,
+    PSPromiseStateRejected = 1 << 2
 };
 
 @interface PSPromise : NSObject
@@ -25,18 +25,18 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 
 @property (nonatomic, readonly, assign) PSPromiseState state;
 @property (nonatomic, readonly) id value;
-
-- (PSPromise *(^)(id block))finally;
-- (PSPromise *(^)(void (^resolver)(id result, PSResolve resolve)))thenPromise;
 @end
 
+/**
+ *  CommonJS的标准接口
+ */
 @interface PSPromise (CommonJS)
 /**
  *  接受的参数如果是promise对象就直接返回
  *  如果接受的参数是NSError对象，就会生成一个失败态(rejected)的promise，并传递给之后的catch
  *  其它的会生成一个成功态(fulfilled)的promise，并传递给之后的then
  */
-+ (PSPromise *(^)(id value))resolve;
++ (PSPromise *(^)(id _Nullable value))resolve;
 
 /**
  *  PSPromise.all用来包装一系列的promise对象，返回一个包装后的promise对象，我们称之为A
@@ -73,8 +73,22 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 - (PSPromise *(^)(id block))catch;
 @end
 
-FOUNDATION_EXPORT PSPromise *PSPROMISE(void (^)(PSResolve resolve));
+/**
+ *  标准接口之外添加的便利方法
+ */
+@interface PSPromise (Extension)
+- (PSPromise *(^)(id block))thenAsync;
+- (PSPromise *(^)(dispatch_queue_t queue, id block))thenOn;
+- (PSPromise *(^)(void (^resolver)(id result, PSResolve resolve)))thenPromise;
 
+- (PSPromise *(^)(id block))catchAsync;
+- (PSPromise *(^)(dispatch_queue_t queue, id block))catchOn;
+
+- (PSPromise *(^)(id block))finally;
+@end
+
+FOUNDATION_EXPORT PSPromise *PSPromiseWithResolve(void (^)(PSResolve resolve));
+FOUNDATION_EXPORT PSPromise *PSPromiseWithBlock(id block);
 NS_ASSUME_NONNULL_END
 
 

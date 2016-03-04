@@ -40,11 +40,60 @@ typedef NS_ENUM(NSUInteger, PSBlockDescriptionFlags) {
     PSBlockDescriptionFlagsHasSignature = (1 << 30)
 };
 
+static NSMethodSignature *_signatureForBlock(id block) {
+    if (!block)
+        return nil;
+    
+    struct PSBlockLiteral *blockRef = (__bridge struct PSBlockLiteral *)block;
+    PSBlockDescriptionFlags flags = (PSBlockDescriptionFlags)blockRef->flags;
+    
+    if (flags & PSBlockDescriptionFlagsHasSignature) {
+        void *signatureLocation = blockRef->descriptor;
+        signatureLocation += sizeof(unsigned long int);
+        signatureLocation += sizeof(unsigned long int);
+        
+        if (flags & PSBlockDescriptionFlagsHasCopyDispose) {
+            signatureLocation += sizeof(void (*)(void *dst, void *src));
+            signatureLocation += sizeof(void (*)(void *src));
+        }
+        
+        const char *signature = (*(const char **)signatureLocation);
+        return [NSMethodSignature signatureWithObjCTypes:signature];
+    }
+    return nil;
+}
+
+static id _call_block(id block, id args){
+    NSMethodSignature *signature = _signatureForBlock(block);
+    
+    const char returnType = signature.methodReturnType[0];
+    if (returnType != '@' && returnType != 'v') {
+        [NSException raise:NSInvalidArgumentException format:@"PSPromise无法处理非对象返回值，block返回值必须是OC对象"];
+    }
+    
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setTarget:[block copy]];
+    if (args && signature.numberOfArguments > 1) {
+        [invocation setArgument:&args atIndex:1];
+    }
+    
+    @try {
+        [invocation invoke];
+        
+        if (returnType == 'v') { return nil; }
+        __unsafe_unretained id result;
+        [invocation getReturnValue:&result];
+        return result;
+    }
+    @catch (NSError *error) {// just catch NSError
+        return error;
+    }
+}
+
 @interface PSPromise()
+@property (nonatomic) dispatch_queue_t barrier;
 @property (nonatomic, strong) id value;
 @property (nonatomic, strong) NSMutableArray<PSResolve> *handlers;
-
-@property (nonatomic) dispatch_queue_t barrier;
 @end
 
 @implementation PSPromise
@@ -81,15 +130,22 @@ typedef NS_ENUM(NSUInteger, PSBlockDescriptionFlags) {
         };
         
         PSResolve __resolve = ^(id result){
-            if (isPromise(result)) {
-                [result pipe:__presolve];
-            }else{
-                __presolve(result);
+            if (self.state & PSPromiseStatePending) {
+                if (isPromise(result)) {
+                    [result pipe:__presolve];
+                }else{
+                    __presolve(result);
+                }
             }
         };
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            resolver(__resolve);
+            @try {
+                resolver(__resolve);
+            }
+            @catch (NSError *error) {
+                __resolve(error);
+            }
         });
     }
     return self;
@@ -119,7 +175,7 @@ typedef NS_ENUM(NSUInteger, PSBlockDescriptionFlags) {
     }
 }
 
-static inline PSPromise *PromiseWith(PSPromise *self, void(^then)(id, PSResolve)){
+static inline PSPromise *__promisePipe(PSPromise *self, void(^then)(id, PSResolve)){
     return [[PSPromise alloc] initWithResolver:^(PSResolve resolver) {
         [self pipe:^(id result) {
             then(result, resolver);//handle resule of previous promise
@@ -127,80 +183,30 @@ static inline PSPromise *PromiseWith(PSPromise *self, void(^then)(id, PSResolve)
     }];
 }
 
-#pragma mark - finally
-- (PSPromise *(^)(id))finally{
-    return ^(id block){
-        return PromiseWith(self, ^(id result, PSResolve resolver) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                _call_block(block, result);
-                resolver(result);
+static inline PSPromise *__then(PSPromise *self, dispatch_queue_t queue, id block){
+    return __promisePipe(self, ^(id result, PSResolve resolver) {
+        if (isRejected(result)) {
+            resolver(result);
+        }else{
+            dispatch_async(queue, ^{
+                resolver(_call_block(block, result));
             });
-        });
-    };
-}
-
-- (PSPromise * (^)(void (^)(id, PSResolve)))thenPromise{
-    return ^(void (^resolver)(id, PSResolve)){
-        return PSPROMISE(^(PSResolve resolve) {
-            [self pipe:^(id result) {
-                if (!isRejected(result)) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        resolver(result, resolve);
-                    });
-                }else{
-                    resolve(result);
-                }
-            }];
-        });
-    };
-}
-
-#pragma mark - block caller
-static id _call_block(id block, id args){
-    NSMethodSignature *signature = _signatureForBlock(block);
-    
-    const char returnType = signature.methodReturnType[0];
-    if (returnType != '@' && returnType != 'v') {
-        [NSException raise:NSInvalidArgumentException format:@"PSPromise无法处理非对象返回值，block返回值必须是OC对象"];
-    }
-    
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
-    [invocation setTarget:[block copy]];
-    if (args && signature.numberOfArguments > 1) {
-        [invocation setArgument:&args atIndex:1];
-    }
-    
-    [invocation invoke];
-    
-    if (returnType == 'v') { return nil; }
-    __unsafe_unretained id result;
-    [invocation getReturnValue:&result];
-    return result;
-}
-
-#pragma mark - block signature
-static NSMethodSignature *_signatureForBlock(id block) {
-    if (!block)
-        return nil;
-    
-    struct PSBlockLiteral *blockRef = (__bridge struct PSBlockLiteral *)block;
-    PSBlockDescriptionFlags flags = (PSBlockDescriptionFlags)blockRef->flags;
-    
-    if (flags & PSBlockDescriptionFlagsHasSignature) {
-        void *signatureLocation = blockRef->descriptor;
-        signatureLocation += sizeof(unsigned long int);
-        signatureLocation += sizeof(unsigned long int);
-        
-        if (flags & PSBlockDescriptionFlagsHasCopyDispose) {
-            signatureLocation += sizeof(void (*)(void *dst, void *src));
-            signatureLocation += sizeof(void (*)(void *src));
         }
-        
-        const char *signature = (*(const char **)signatureLocation);
-        return [NSMethodSignature signatureWithObjCTypes:signature];
-    }
-    return nil;
+    });
 }
+
+static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id block){
+    return __promisePipe(self, ^(id result, PSResolve resolver) {
+        if (isRejected(result)) {
+            dispatch_async(queue, ^{
+                resolver(_call_block(block, result));
+            });
+        }else{
+            resolver(result);
+        }
+    });
+}
+
 @end
 
 @implementation PSPromise (CommonJS)
@@ -264,37 +270,74 @@ static NSMethodSignature *_signatureForBlock(id block) {
     };
 }
 
-#pragma mark - then
 - (PSPromise *(^)(id))then{
     return ^(id block){
-        return PromiseWith(self, ^(id result, PSResolve resolver) {
-            if (isRejected(result)) {
-                resolver(result);
-            }else{
+        return __then(self, dispatch_get_main_queue(), block);
+    };
+}
+
+- (PSPromise *(^)(id))catch{
+    return ^(id block){
+        return __catch(self, dispatch_get_main_queue(), block);
+    };
+}
+@end
+
+@implementation PSPromise (Extension)
+- (PSPromise *(^)(id))thenAsync{
+    return ^(id block){
+        return __then(self, dispatch_get_global_queue(0, 0), block);
+    };
+}
+
+- (PSPromise *(^)(dispatch_queue_t, id))thenOn{
+    return ^(dispatch_queue_t queue, id block){
+        return __then(self, queue, block);
+    };
+}
+
+- (PSPromise * (^)(void (^)(id, PSResolve)))thenPromise{
+    return ^(void (^resolver)(id, PSResolve)){
+        return __promisePipe(self, ^(id result, PSResolve resolve) {
+            if (!isRejected(result)) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    resolver(_call_block(block, result));
+                    resolver(result, resolve);
                 });
+            }else{
+                resolve(result);
             }
         });
     };
 }
 
-#pragma mark - catch
-- (PSPromise *(^)(id))catch{
+- (PSPromise *(^)(id))catchAsync{
     return ^(id block){
-        return PromiseWith(self, ^(id result, PSResolve resolver) {
-            if (isRejected(result)) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    resolver(_call_block(block, result));
-                });
-            }else{
+        return __catch(self, dispatch_get_global_queue(0, 0), block);
+    };
+}
+
+- (PSPromise *(^)(dispatch_queue_t, id))catchOn{
+    return ^(dispatch_queue_t queue, id block){
+        return __catch(self, queue, block);
+    };
+}
+
+- (PSPromise *(^)(id))finally{
+    return ^(id block){
+        return __promisePipe(self, ^(id result, PSResolve resolver) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                _call_block(block, result);
                 resolver(result);
-            }
+            });
         });
     };
 }
 @end
 
-PSPromise *PSPROMISE(void (^resolver)(PSResolve)){
+PSPromise *PSPromiseWithResolve(void (^resolver)(PSResolve)){
     return [[PSPromise alloc] initWithResolver:resolver];
+}
+
+PSPromise *PSPromiseWithBlock(id block){
+    return PSPromise.resolve(nil).then(block);
 }

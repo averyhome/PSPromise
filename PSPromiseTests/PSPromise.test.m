@@ -9,11 +9,11 @@
 #import <XCTest/XCTest.h>
 #import <PSPromise/PSPromise.h>
 
-@interface PSPromiseTests : XCTestCase
+@interface PSPromise_test : XCTestCase
 
 @end
 
-@implementation PSPromiseTests
+@implementation PSPromise_test
 
 - (void)setUp {
     [super setUp];
@@ -27,7 +27,7 @@
 
 - (void)testPromiseBlock{
     id ex1 = [self expectationWithDescription:@""];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve(@"AsyncTask completed");
         });
@@ -43,7 +43,7 @@
 - (void)testPromiseError{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve([NSError errorWithDomain:@"promise" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"发生错误了"}]);
         });
@@ -74,13 +74,13 @@
 
 - (void)testThen2{
     id ex1 = [self expectationWithDescription:@""];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve(@"AsyncTask completed");
         });
     }).then(^(NSString *result){
         XCTAssert([result isEqualToString:@"AsyncTask completed"]);
-        return PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        return PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
             resolve([result stringByAppendingString:@"123"]);
         }).then(^{
             return @"123";
@@ -97,7 +97,7 @@
 
 - (void)testFinally1{
     id ex1 = [self expectationWithDescription:@""];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve(@"AsyncTask completed");
         });
@@ -113,7 +113,7 @@
 
 - (void)testFinally2{
     id ex1 = [self expectationWithDescription:@""];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve([NSError errorWithDomain:@"promise" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"发生错误了"}]);
         });
@@ -129,13 +129,13 @@
 
 - (void)testFinally3{
     id ex1 = [self expectationWithDescription:@""];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
             resolve(@"AsyncTask completed");
         });
     }).then(^(NSString *result){
         XCTAssert([result isEqualToString:@"AsyncTask completed"]);
-        return PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        return PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
             resolve([result stringByAppendingString:@"123"]);
         }).then(^{
             return @"123";
@@ -150,10 +150,10 @@
 
 - (void)testPipe{
     id ex1 = [self expectationWithDescription:@"expectation"];
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         resolve(@"123");
     }).then(^(NSString *result){
-        return PSPROMISE(^(PSResolve  _Nonnull resolve) {
+        return PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
             resolve([result stringByAppendingString:@"123"]);
         });
     }).then(^(NSString *result){
@@ -166,12 +166,12 @@
 - (void)testPromiseAll{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPromise *p1 = PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromise *p1 = PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         resolve(@"thread1");
     });
     
-    PSPromise *p2 = PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromise *p2 = PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         resolve(@"thread2");
     });
@@ -188,12 +188,12 @@
 - (void)testPromiseRace{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPromise *p1 = PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromise *p1 = PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         resolve(@"thread1");
     });
     
-    PSPromise *p2 = PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromise *p2 = PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         resolve(@"thread2");
     });
@@ -210,7 +210,7 @@
 - (void)testThenPromise{
     id ex1 = [self expectationWithDescription:@""];
     
-    PSPROMISE(^(PSResolve  _Nonnull resolve) {
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         resolve(@"1");
     }).thenPromise(^(NSString *result, PSResolve resolve){
         XCTAssert([result isEqualToString:@"1"]);
@@ -220,5 +220,22 @@
         [ex1 fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testDelay{
+    id ex1 = [self expectationWithDescription:@""];
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            resolve([NSError errorWithDomain:@"promise" code:-1000 userInfo:nil]);
+        });
+        resolve(@YES);
+    }).then(^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [ex1 fulfill];
+        });
+    }).catch(^(NSError *error){
+        XCTAssert(NO, @"这里不应该执行");
+    });
+    [self waitForExpectationsWithTimeout:5 handler:nil];
 }
 @end
