@@ -8,11 +8,24 @@
 
 #import "PSPromise.h"
 #import <libkern/OSAtomic.h>
+
 #define isRejected(obj) [obj isKindOfClass:[NSError class]]
 #define isPromise(obj) [obj isKindOfClass:[PSPromise class]]
 #define isBlock(obj) [obj isKindOfClass:NSClassFromString(@"NSBlock")]
 
 NSString * const PSPromiseInternalErrorsKey = @"PSPromiseInternalErrorsKey";
+NSError *NSErrorMake(NSString *localizedDescription, id internalErrors){
+    static NSString *domain = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        domain = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
+        domain = domain ?: @"none domain";
+    });
+    return [NSError errorWithDomain:domain code:-1000 userInfo:@{
+                                                                 NSLocalizedDescriptionKey: localizedDescription,
+                                                                 PSPromiseInternalErrorsKey: internalErrors ?: [NSNull null]
+                                                                 }];
+}
 
 /**
  *  @see CTObjectiveCRuntimeAdditions https://github.com/ebf/CTObjectiveCRuntimeAdditions

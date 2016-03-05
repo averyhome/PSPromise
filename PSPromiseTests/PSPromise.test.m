@@ -8,7 +8,8 @@
 
 #import <XCTest/XCTest.h>
 #import <PSPromise/PSPromise.h>
-#import "error.h"
+
+#define TIME_OUT 1
 
 @interface PSPromise_test : XCTestCase
 
@@ -28,7 +29,7 @@
     }).catch(^{
         XCTAssert(NO, @"这里不该执行");
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testPromiseError{
@@ -36,7 +37,7 @@
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve([NSError errorWithDomain:@"promise" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"发生错误了"}]);
+            resolve(NSErrorMake(@"发生错误了", nil));
         });
     }).then(^{
         XCTAssert(NO, @"这里不该执行");
@@ -44,7 +45,7 @@
         XCTAssert(error!= nil);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testThen{
@@ -60,7 +61,7 @@
         XCTAssert([result isEqualToString:@"123123"]);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testThen2{
@@ -83,7 +84,7 @@
     }).always(^{
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testFinally1{
@@ -99,14 +100,14 @@
     }).always(^{
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testFinally2{
     id ex1 = [self expectationWithDescription:@""];
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve([NSError errorWithDomain:@"promise" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"发生错误了"}]);
+            resolve(NSErrorMake(@"发生错误了", nil));
         });
     }).then(^{
         XCTAssert(NO, @"这里不该执行");
@@ -115,7 +116,7 @@
     }).always(^{
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testFinally3{
@@ -136,7 +137,7 @@
     }).always(^{
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testPipe{
@@ -151,7 +152,7 @@
         XCTAssert([result isEqualToString:@"123123"]);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testPromiseAll{
@@ -173,7 +174,7 @@
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testPromiseRace{
@@ -195,7 +196,7 @@
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testThenPromise{
@@ -210,14 +211,14 @@
         XCTAssert([result isEqualToString:@"2"]);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testDelay{
     id ex1 = [self expectationWithDescription:@""];
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            resolve([NSError errorWithDomain:@"promise" code:-1000 userInfo:nil]);
+            resolve(NSErrorMake(@"发生错误了", nil));
         });
         resolve(@YES);
     }).then(^{
@@ -227,6 +228,6 @@
     }).catch(^(NSError *error){
         XCTAssert(NO, @"这里不应该执行");
     });
-    [self waitForExpectationsWithTimeout:5 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 @end

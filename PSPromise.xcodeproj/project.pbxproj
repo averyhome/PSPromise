@@ -26,7 +26,6 @@
 		1D5000461C71BE17003FD639 /* PSPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D5000451C71BE17003FD639 /* PSPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1D50004D1C71BE17003FD639 /* PSPromise.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D5000421C71BE17003FD639 /* PSPromise.framework */; };
 		1D5000521C71BE17003FD639 /* PSPromise.test.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D5000511C71BE17003FD639 /* PSPromise.test.m */; };
-		1D9205F31C8A95E0008247B2 /* error.m in Sources */ = {isa = PBXBuildFile; fileRef = 1D9205F21C8A95E0008247B2 /* error.m */; };
 		5D0C0AB11C7938320025F356 /* PSPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D0C0AAF1C7938320025F356 /* PSPromise.m */; };
 /* End PBXBuildFile section */
 
@@ -49,8 +48,6 @@
 		1D50004C1C71BE17003FD639 /* PSPromiseTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PSPromiseTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D5000511C71BE17003FD639 /* PSPromise.test.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PSPromise.test.m; sourceTree = "<group>"; };
 		1D5000531C71BE17003FD639 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		1D9205F11C8A95E0008247B2 /* error.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = error.h; sourceTree = "<group>"; };
-		1D9205F21C8A95E0008247B2 /* error.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = error.m; sourceTree = "<group>"; };
 		5D0C0AAF1C7938320025F356 /* PSPromise.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PSPromise.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,8 +105,6 @@
 				1D5000511C71BE17003FD639 /* PSPromise.test.m */,
 				1D2A900E1C76B029002B7FA1 /* Thread.test.m */,
 				1D400F541C896598004EDC8D /* Error.test.m */,
-				1D9205F11C8A95E0008247B2 /* error.h */,
-				1D9205F21C8A95E0008247B2 /* error.m */,
 			);
 			path = PSPromiseTests;
 			sourceTree = "<group>";
@@ -250,7 +245,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1D9205F31C8A95E0008247B2 /* error.m in Sources */,
 				1D400F551C896598004EDC8D /* Error.test.m in Sources */,
 				1D5000521C71BE17003FD639 /* PSPromise.test.m in Sources */,
 				1D2A900F1C76B029002B7FA1 /* Thread.test.m in Sources */,

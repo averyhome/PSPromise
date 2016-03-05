@@ -13,6 +13,13 @@
 NS_ASSUME_NONNULL_BEGIN
 
 FOUNDATION_EXPORT NSString * const PSPromiseInternalErrorsKey;
+/**
+ *  快速构建NSError对象
+ *
+ *  @param localizedDescription 错误描述
+ *  @param internalErrors       内部错误，通过error.userInfo[PSPromiseInternalErrorsKey]可以获得
+ */
+FOUNDATION_EXPORT NSError *NSErrorMake(NSString *localizedDescription, id _Nullable internalErrors);
 
 typedef void (^PSResolve)(id __nullable result);
 
@@ -31,7 +38,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 @end
 
 /**
- *  CommonJS Promise/A的标准接口
+ *  CommonJS Promise/A 标准接口
  */
 @interface PSPromise (CommonJS)
 /**

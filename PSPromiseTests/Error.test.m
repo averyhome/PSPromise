@@ -8,7 +8,8 @@
 
 #import <XCTest/XCTest.h>
 #import <PSPromise/PSPromise.h>
-#import "error.h"
+
+#define TIME_OUT 1
 
 @interface Error_test : XCTestCase
 
@@ -20,7 +21,7 @@
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
     }).catch(^(NSError *error){
@@ -31,7 +32,7 @@
         [ex fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testThen2{
@@ -40,7 +41,7 @@
     PSPromiseWithBlock(^{
         return @"aaa";
     }).thenAsync(^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -51,7 +52,7 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testThen3{
@@ -60,7 +61,7 @@
     PSPromiseWithBlock(^{
         return @"aaa";
     }).thenPromise(^(id result, PSResolve resolve){
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -71,7 +72,7 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testThen4{
@@ -80,7 +81,7 @@
     PSPromiseWithBlock(^{
         return @"aaa";
     }).thenOn(dispatch_get_global_queue(0, 0), ^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -91,16 +92,16 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testCatch1{
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorWithLocalizedDescription(@"abc");
+        @throw NSErrorMake(@"abc", nil);
     }).catch(^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -111,16 +112,16 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testCatch2{
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorWithLocalizedDescription(@"abc");
+        @throw NSErrorMake(@"abc", nil);
     }).catchAsync(^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -131,16 +132,16 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testCatch3{
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorWithLocalizedDescription(@"abc");
+        @throw NSErrorMake(@"abc", nil);
     }).catchOn(dispatch_get_global_queue(0, 0), ^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -151,16 +152,16 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)testAlways{
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorWithLocalizedDescription(@"abc");
+        @throw NSErrorMake(@"abc", nil);
     }).always(^{
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -171,7 +172,7 @@
     }).always(^{
         [ex fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 @end

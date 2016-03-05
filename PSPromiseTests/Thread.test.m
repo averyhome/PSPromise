@@ -8,7 +8,8 @@
 
 #import <XCTest/XCTest.h>
 #import <PSPromise/PSPromise.h>
-#import "error.h"
+
+#define TIME_OUT 1
 
 @interface Thread_test : XCTestCase
 
@@ -22,7 +23,7 @@
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)test2{
@@ -34,7 +35,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 - (void)test3{
     id ex1 = [self expectationWithDescription:@""];
@@ -46,7 +47,7 @@
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 - (void)test4{
     id ex1 = [self expectationWithDescription:@""];
@@ -60,7 +61,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 - (void)test5{
     id ex1 = [self expectationWithDescription:@""];
@@ -74,7 +75,7 @@
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)test6{
@@ -82,28 +83,28 @@
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve([NSError errorWithDomain:@"cn.yerl.promise.error" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"测试错误"}]);
+            resolve(NSErrorMake(@"发生错误了", nil));
         });
     }).catch(^(NSError *error){
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 - (void)test7{
     id ex1 = [self expectationWithDescription:@""];
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve([NSError errorWithDomain:@"cn.yerl.promise.error" code:-1000 userInfo:@{NSLocalizedDescriptionKey: @"测试错误"}]);
+            resolve(NSErrorMake(@"发生错误了", nil));
         });
     }).always(^{
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 - (void)test8{
     id ex1 = [self expectationWithDescription:@""];
@@ -117,7 +118,7 @@
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)test9{
@@ -132,7 +133,7 @@
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)test10{
@@ -146,11 +147,11 @@
         });
     }).thenOn(queue, ^{
         dispatch_queue_t current_queuet = dispatch_get_current_queue();
-        XCTAssert(strcmp(dispatch_queue_get_label(queue), "dispatch_test") == 0);
+        XCTAssert(strcmp(dispatch_queue_get_label(current_queuet), "dispatch_test") == 0);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)test11{
@@ -159,28 +160,26 @@
     dispatch_queue_t queue = dispatch_queue_create("dispatch_test", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).catchOn(queue, ^{
         dispatch_queue_t current_queuet = dispatch_get_current_queue();
-        XCTAssert(strcmp(dispatch_queue_get_label(queue), "dispatch_test") == 0);
+        XCTAssert(strcmp(dispatch_queue_get_label(current_queuet), "dispatch_test") == 0);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
 - (void)test12{
     id ex1 = [self expectationWithDescription:@""];
     
-    dispatch_queue_t queue = dispatch_queue_create("dispatch_test", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
-        @throw NSErrorWithLocalizedDescription(@"Error");
+        @throw NSErrorMake(@"Error", nil);
     }).catchAsync(^{
         XCTAssertEqual([NSThread currentThread].isMainThread, NO);
         [ex1 fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 @end
