@@ -10,9 +10,10 @@
 
 #define PSPROMISE_API_UNAVAILABLE(INFO) __attribute__((unavailable(INFO)))
 
+NS_ASSUME_NONNULL_BEGIN
+
 FOUNDATION_EXPORT NSString * const PSPromiseInternalErrorsKey;
 
-NS_ASSUME_NONNULL_BEGIN
 typedef void (^PSResolve)(id __nullable result);
 
 typedef NS_ENUM(NSUInteger, PSPromiseState) {
@@ -30,7 +31,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 @end
 
 /**
- *  CommonJS的标准接口
+ *  CommonJS Promise/A的标准接口
  */
 @interface PSPromise (CommonJS)
 /**
@@ -91,6 +92,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 
 FOUNDATION_EXPORT PSPromise *PSPromiseWithResolve(void (^)(PSResolve resolve));
 FOUNDATION_EXPORT PSPromise *PSPromiseWithBlock(id block);
+FOUNDATION_EXPORT PSPromise *PSPromiseAsyncWithBlock(id block);
 NS_ASSUME_NONNULL_END
 
 

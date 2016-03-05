@@ -304,7 +304,12 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
         return __promisePipe(self, ^(id result, PSResolve resolve) {
             if (!isRejected(result)) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    resolver(result, resolve);
+                    @try {
+                        resolver(result, resolve);
+                    }
+                    @catch (NSError *error) {
+                        resolve(error);
+                    }
                 });
             }else{
                 resolve(result);
@@ -342,4 +347,8 @@ PSPromise *PSPromiseWithResolve(void (^resolver)(PSResolve)){
 
 PSPromise *PSPromiseWithBlock(id block){
     return PSPromise.resolve(nil).then(block);
+}
+
+PSPromise *PSPromiseAsyncWithBlock(id block){
+    return PSPromise.resolve(nil).thenAsync(block);
 }

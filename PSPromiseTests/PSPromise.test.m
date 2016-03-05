@@ -8,22 +8,13 @@
 
 #import <XCTest/XCTest.h>
 #import <PSPromise/PSPromise.h>
+#import "error.h"
 
 @interface PSPromise_test : XCTestCase
 
 @end
 
 @implementation PSPromise_test
-
-- (void)setUp {
-    [super setUp];
-    // Put setup code here. This method is called before the invocation of each test method in the class.
-}
-
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
-    [super tearDown];
-}
 
 - (void)testPromiseBlock{
     id ex1 = [self expectationWithDescription:@""];
@@ -89,7 +80,7 @@
         XCTAssert([result isEqualToString:@"123"]);
     }).catch(^{
         XCTAssert(NO, @"这里不该执行");
-    }).finally(^{
+    }).always(^{
         [ex1 fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
@@ -105,7 +96,7 @@
         XCTAssert([result isEqualToString:@"AsyncTask completed"]);
     }).catch(^{
         XCTAssert(NO, @"这里不该执行");
-    }).finally(^{
+    }).always(^{
         [ex1 fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
@@ -121,7 +112,7 @@
         XCTAssert(NO, @"这里不该执行");
     }).catch(^(NSError *error){
         XCTAssert(error!= nil);
-    }).finally(^{
+    }).always(^{
         [ex1 fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
@@ -142,7 +133,7 @@
         });
     }).catch(^{
         XCTAssert(NO, @"这里不该执行");
-    }).finally(^{
+    }).always(^{
         [ex1 fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
