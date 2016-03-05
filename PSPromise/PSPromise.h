@@ -10,6 +10,8 @@
 
 #define PSPROMISE_API_UNAVAILABLE(INFO) __attribute__((unavailable(INFO)))
 
+FOUNDATION_EXPORT NSString * const PSPromiseInternalErrorsKey;
+
 NS_ASSUME_NONNULL_BEGIN
 typedef void (^PSResolve)(id __nullable result);
 
@@ -84,7 +86,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 - (PSPromise *(^)(id block))catchAsync;
 - (PSPromise *(^)(dispatch_queue_t queue, id block))catchOn;
 
-- (PSPromise *(^)(id block))finally;
+- (PSPromise *(^)(id block))always;
 @end
 
 FOUNDATION_EXPORT PSPromise *PSPromiseWithResolve(void (^)(PSResolve resolve));

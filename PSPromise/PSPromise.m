@@ -12,6 +12,8 @@
 #define isPromise(obj) [obj isKindOfClass:[PSPromise class]]
 #define isBlock(obj) [obj isKindOfClass:NSClassFromString(@"NSBlock")]
 
+NSString * const PSPromiseInternalErrorsKey = @"PSPromiseInternalErrorsKey";
+
 /**
  *  @see CTObjectiveCRuntimeAdditions https://github.com/ebf/CTObjectiveCRuntimeAdditions
  */
@@ -233,7 +235,8 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                     }else if (OSAtomicDecrement64(&totalCount) == 0){
                         id results = [NSMutableArray new];
                         for (id promise in promises) {
-                            [results addObject:isPromise(promise) ? [promise value] : promise];
+                            id value = isPromise(promise) ? [promise value] : promise;
+                            [results addObject:value ?: [NSNull null]];
                         }
                         resolve(results);
                     }
@@ -261,8 +264,8 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                         }
                         resolve([NSError errorWithDomain:@"cn.yerl.promise"
                                                     code:-1000
-                                                userInfo:@{NSLocalizedFailureReasonErrorKey: @"all promise were rejected",
-                                                           NSLocalizedDescriptionKey: errors}]);
+                                                userInfo:@{NSLocalizedDescriptionKey: @"all promise were rejected",
+                                                           PSPromiseInternalErrorsKey: errors}]);
                     }
                 }];
             }
@@ -322,12 +325,11 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
     };
 }
 
-- (PSPromise *(^)(id))finally{
+- (PSPromise *(^)(id))always{
     return ^(id block){
         return __promisePipe(self, ^(id result, PSResolve resolver) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                _call_block(block, result);
-                resolver(result);
+                resolver(_call_block(block, result));
             });
         });
     };
