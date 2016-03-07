@@ -29,7 +29,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
     PSPromiseStateRejected = 1 << 2
 };
 
-@interface PSPromise : NSObject
+@interface PSPromise<ValueType> : NSObject
 - (instancetype)init PSPROMISE_API_UNAVAILABLE("不允许直接实例化");
 + (instancetype)new PSPROMISE_API_UNAVAILABLE("不允许直接实例化");
 
