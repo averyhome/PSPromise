@@ -196,7 +196,7 @@ static id _call_block(id block, id args){
     }
 }
 
-static inline PSPromise *__promisePipe(PSPromise *self, void(^then)(id, PSResolve)){
+static inline PSPromise *__pipe(PSPromise *self, void(^then)(id, PSResolve)){
     return [[PSPromise alloc] initWithResolver:^(PSResolve resolver) {
         [self pipe:^(id result) {
             then(result, resolver);//handle resule of previous promise
@@ -205,7 +205,7 @@ static inline PSPromise *__promisePipe(PSPromise *self, void(^then)(id, PSResolv
 }
 
 static inline PSPromise *__then(PSPromise *self, dispatch_queue_t queue, id block){
-    return __promisePipe(self, ^(id result, PSResolve resolver) {
+    return __pipe(self, ^(id result, PSResolve resolver) {
         if (isRejected(result)) {
             resolver(result);
         }else{
@@ -217,7 +217,7 @@ static inline PSPromise *__then(PSPromise *self, dispatch_queue_t queue, id bloc
 }
 
 static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id block){
-    return __promisePipe(self, ^(id result, PSResolve resolver) {
+    return __pipe(self, ^(id result, PSResolve resolver) {
         if (isRejected(result)) {
             dispatch_async(queue, ^{
                 resolver(_call_block(block, result));
@@ -249,7 +249,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                     if (isRejected(result)) {
                         resolve([NSError errorWithDomain:@"cn.yerl.promise"
                                                     code:-1000
-                                                userInfo:@{NSLocalizedFailureReasonErrorKey: @"one of promise in promises were rejected",
+                                                userInfo:@{NSLocalizedFailureReasonErrorKey: @"one of promise in promises was rejected",
                                                            NSLocalizedDescriptionKey: result}]);
                     }else if (OSAtomicDecrement64(&totalCount) == 0){
                         id results = [NSMutableArray new];
@@ -320,7 +320,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 
 - (PSPromise * (^)(void (^)(id, PSResolve)))thenPromise{
     return ^(void (^resolver)(id, PSResolve)){
-        return __promisePipe(self, ^(id result, PSResolve resolve) {
+        return __pipe(self, ^(id result, PSResolve resolve) {
             if (!isRejected(result)) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     @try {
@@ -351,9 +351,14 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 
 - (PSPromise *(^)(id))always{
     return ^(id block){
-        return __promisePipe(self, ^(id result, PSResolve resolver) {
+        return __pipe(self, ^(id result, PSResolve resolver) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                resolver(_call_block(block, result));
+                @try {
+                    resolver(_call_block(block, result));
+                }
+                @catch (NSError *error) {
+                    resolver(error);
+                }
             });
         });
     };
