@@ -21,9 +21,9 @@
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
-        XCTAssert(NO, @"这里不应该执行");
+        XCTAssert(NO, @"这里不应该执行:%@", @"123");
     }).catch(^(NSError *error){
         XCTAssert([error.localizedDescription isEqualToString:@"Error"]);
     }).catch(^{
@@ -41,7 +41,7 @@
     PSPromiseWithBlock(^{
         return @"aaa";
     }).thenAsync(^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -61,7 +61,7 @@
     PSPromiseWithBlock(^{
         return @"aaa";
     }).thenPromise(^(id result, PSResolve resolve){
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -81,7 +81,7 @@
     PSPromiseWithBlock(^{
         return @"aaa";
     }).thenOn(dispatch_get_global_queue(0, 0), ^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -99,9 +99,9 @@
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorMake(@"abc", nil);
+        @throw NSErrorMake(nil, @"abc");
     }).catch(^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -119,9 +119,9 @@
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorMake(@"abc", nil);
+        @throw NSErrorMake(nil, @"abc");
     }).catchAsync(^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -139,9 +139,9 @@
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorMake(@"abc", nil);
+        @throw NSErrorMake(nil, @"abc");
     }).catchOn(dispatch_get_global_queue(0, 0), ^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;
@@ -159,9 +159,9 @@
     id ex = [self expectationWithDescription:@""];
     
     PSPromiseWithBlock(^{
-        @throw NSErrorMake(@"abc", nil);
+        @throw NSErrorMake(nil, @"abc");
     }).always(^{
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行");
         return nil;

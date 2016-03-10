@@ -19,7 +19,7 @@ FOUNDATION_EXPORT NSString * const PSPromiseInternalErrorsKey;
  *  @param localizedDescription 错误描述
  *  @param internalErrors       内部错误，通过error.userInfo[PSPromiseInternalErrorsKey]可以获得
  */
-FOUNDATION_EXPORT NSError *NSErrorMake(NSString *localizedDescription, id _Nullable internalErrors);
+FOUNDATION_EXPORT NSError *NSErrorMake(id _Nullable internalErrors, NSString *localizedDescription, ...) NS_FORMAT_FUNCTION(2,3);
 
 typedef void (^PSResolve)(id __nullable result);
 

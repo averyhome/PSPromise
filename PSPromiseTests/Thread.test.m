@@ -83,7 +83,7 @@
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve(NSErrorMake(@"发生错误了", nil));
+            resolve(NSErrorMake(nil, @"发生错误了"));
         });
     }).catch(^(NSError *error){
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
@@ -97,7 +97,7 @@
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve(NSErrorMake(@"发生错误了", nil));
+            resolve(NSErrorMake(nil, @"发生错误了"));
         });
     }).always(^{
         XCTAssertEqual([NSThread currentThread].isMainThread, YES);
@@ -160,7 +160,7 @@
     dispatch_queue_t queue = dispatch_queue_create("dispatch_test", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).catchOn(queue, ^{
         dispatch_queue_t current_queuet = dispatch_get_current_queue();
         XCTAssert(strcmp(dispatch_queue_get_label(current_queuet), "dispatch_test") == 0);
@@ -174,7 +174,7 @@
     id ex1 = [self expectationWithDescription:@""];
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
-        @throw NSErrorMake(@"Error", nil);
+        @throw NSErrorMake(nil, @"Error");
     }).catchAsync(^{
         XCTAssertEqual([NSThread currentThread].isMainThread, NO);
         [ex1 fulfill];

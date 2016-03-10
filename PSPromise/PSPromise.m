@@ -14,15 +14,21 @@
 #define isBlock(obj) [obj isKindOfClass:NSClassFromString(@"NSBlock")]
 
 NSString * const PSPromiseInternalErrorsKey = @"PSPromiseInternalErrorsKey";
-NSError *NSErrorMake(NSString *localizedDescription, id internalErrors){
+NSError *NSErrorMake(id _Nullable internalErrors, NSString *localizedDescription, ...){
     static NSString *domain = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         domain = [NSBundle mainBundle].infoDictionary[@"CFBundleName"];
         domain = domain ?: @"none domain";
     });
+    
+    va_list desc_args;
+    va_start(desc_args, localizedDescription);
+    NSString *desc = [[NSString alloc] initWithFormat:localizedDescription arguments:desc_args];
+    va_end(desc_args);
+    
     return [NSError errorWithDomain:domain code:-1000 userInfo:@{
-                                                                 NSLocalizedDescriptionKey: localizedDescription,
+                                                                 NSLocalizedDescriptionKey: desc,
                                                                  PSPromiseInternalErrorsKey: internalErrors ?: [NSNull null]
                                                                  }];
 }

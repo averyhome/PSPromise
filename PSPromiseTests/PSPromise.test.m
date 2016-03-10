@@ -37,7 +37,7 @@
     
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve(NSErrorMake(@"发生错误了", nil));
+            resolve(NSErrorMake(nil, @"发生错误了"));
         });
     }).then(^{
         XCTAssert(NO, @"这里不该执行");
@@ -107,7 +107,7 @@
     id ex1 = [self expectationWithDescription:@""];
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_async(dispatch_get_global_queue(0, 0), ^{
-            resolve(NSErrorMake(@"发生错误了", nil));
+            resolve(NSErrorMake(nil, @"发生错误了"));
         });
     }).then(^{
         XCTAssert(NO, @"这里不该执行");
@@ -218,7 +218,7 @@
     id ex1 = [self expectationWithDescription:@""];
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            resolve(NSErrorMake(@"发生错误了", nil));
+            resolve(NSErrorMake(nil, @"发生错误了"));
         });
         resolve(@YES);
     }).then(^{
