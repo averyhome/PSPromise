@@ -88,6 +88,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
  */
 @interface PSPromise (Extension)
 - (PSPromise *(^)(id block))thenAsync;
+- (PSPromise *(^)(NSTimeInterval delaySecond, id block))thenDelay;
 - (PSPromise *(^)(dispatch_queue_t queue, id block))thenOn;
 - (PSPromise *(^)(void (^resolver)(id result, PSResolve resolve)))thenPromise;
 

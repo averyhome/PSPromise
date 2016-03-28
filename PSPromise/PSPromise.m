@@ -312,6 +312,22 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
     };
 }
 
+- (PSPromise *(^)(NSTimeInterval, id))thenDelay{
+    return ^(NSTimeInterval delaySecond, id block){
+        return __pipe(self, ^(id result, PSResolve resolver) {
+            if (isRejected(result)) {
+                resolver(result);
+            }else{
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delaySecond * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        resolver(_call_block(block, result));
+                    });
+                });
+            }
+        });
+    };
+}
+
 - (PSPromise *(^)(dispatch_queue_t, id))thenOn{
     return ^(dispatch_queue_t queue, id block){
         return __then(self, queue, block);

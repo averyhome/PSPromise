@@ -214,6 +214,19 @@
     [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
 }
 
+- (void)testDelayThen{
+    id ex1 = [self expectationWithDescription:@""];
+    PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
+        NSLog(@"reutrn: 123");
+        resolve(@"123");
+    }).thenDelay(0.2, ^(NSString *result){
+        NSLog(@"result: %@", result);
+    }).always(^{
+        [ex1 fulfill];
+    });
+    [self waitForExpectationsWithTimeout:TIME_OUT handler:nil];
+}
+
 - (void)testDelay{
     id ex1 = [self expectationWithDescription:@""];
     PSPromiseWithResolve(^(PSResolve  _Nonnull resolve) {
