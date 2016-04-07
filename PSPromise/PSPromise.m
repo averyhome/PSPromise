@@ -9,9 +9,10 @@
 #import "PSPromise.h"
 #import <libkern/OSAtomic.h>
 
-#define isRejected(obj) [obj isKindOfClass:[NSError class]]
+#define isError(obj) [obj isKindOfClass:[NSError class]]
 #define isPromise(obj) [obj isKindOfClass:[PSPromise class]]
 #define isBlock(obj) [obj isKindOfClass:NSClassFromString(@"NSBlock")]
+#define isArray(obj) [obj isKindOfClass:[NSArray class]]
 
 NSString * const PSPromiseInternalErrorsKey = @"PSPromiseInternalErrorsKey";
 NSError *NSErrorMake(id _Nullable internalErrors, NSString *localizedDescription, ...){
@@ -126,18 +127,22 @@ static id _call_block(id block, id args){
     return _handlers ?: (_handlers = [NSMutableArray new]);
 }
 
+/**
+ *  创建一个未执行的Promise
+ */
 - (instancetype)initWithResolver:(void (^)(PSResolve))resolver{
     if (self = [super init]) {
         _state = PSPromiseStatePending;
         
         PSResolve __presolve = ^(id result){
             __block NSMutableArray *handlers;
+            //保证执行链的顺序执行
             dispatch_barrier_sync(self.barrier, ^{
                 //race
                 if (self.state == PSPromiseStatePending) {
                     handlers = self.handlers;
                     
-                    if (isRejected(result)) {
+                    if (isError(result)) {
                         _state = PSPromiseStateRejected;
                     }else{
                         _state = PSPromiseStateFulfilled;
@@ -159,7 +164,7 @@ static id _call_block(id block, id args){
                 }
             }
         };
-        
+        //创建好之后，直接开始执行任务
         dispatch_async(dispatch_get_main_queue(), ^{
             @try {
                 resolver(__resolve);
@@ -172,12 +177,18 @@ static id _call_block(id block, id args){
     return self;
 }
 
+/**
+ *  创建一个已完成的Promise
+ *  如果Value是Promise对象，则直接返回
+ *  如果Value是NSError对象，则返回一个Rejected状态的Promise
+ *  如果Vlaue是其它对象，则返回一个Fulfilled状态的Promise
+ */
 - (instancetype)initWithValue:(id)value{
     if (isPromise(value)) {
         return value;
     }
     if (self = [super init]) {
-        if (isRejected(value)) {
+        if (isError(value)) {
             _state = PSPromiseStateRejected;
             self.value = value;
         }else{
@@ -187,7 +198,11 @@ static id _call_block(id block, id args){
     }
     return self;
 }
-
+/**
+ *  拼接Promise
+ *  如果当前Promise还没有被执行，则接接在当前Promise的执行栈中
+ *  如果当前Promise已经执行了，则直接将当前Promise的值传给下一个执行者
+ */
 - (void)pipe:(PSResolve)resolve{
     if (self.state == PSPromiseStatePending) {
         [self.handlers addObject:resolve];
@@ -196,6 +211,10 @@ static id _call_block(id block, id args){
     }
 }
 
+/**
+ *  创建一个Promise,并拼接在Promise(self)的执行链中
+ *
+ */
 static inline PSPromise *__pipe(PSPromise *self, void(^then)(id, PSResolve)){
     return [[PSPromise alloc] initWithResolver:^(PSResolve resolver) {
         [self pipe:^(id result) {
@@ -204,9 +223,12 @@ static inline PSPromise *__pipe(PSPromise *self, void(^then)(id, PSResolve)){
     }];
 }
 
+/**
+ *  将Promise拼接在self之后,仅处理正确的逻辑
+ */
 static inline PSPromise *__then(PSPromise *self, dispatch_queue_t queue, id block){
     return __pipe(self, ^(id result, PSResolve resolver) {
-        if (isRejected(result)) {
+        if (isError(result)) {
             resolver(result);
         }else{
             dispatch_async(queue, ^{
@@ -215,10 +237,12 @@ static inline PSPromise *__then(PSPromise *self, dispatch_queue_t queue, id bloc
         }
     });
 }
-
+/**
+ *  将Promise接接在self之后,仅处理错误的逻辑
+ */
 static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id block){
     return __pipe(self, ^(id result, PSResolve resolver) {
-        if (isRejected(result)) {
+        if (isError(result)) {
             dispatch_async(queue, ^{
                 resolver(_call_block(block, result));
             });
@@ -240,13 +264,15 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 + (PSPromise *(^)(NSArray<PSPromise *> *))all{
     return ^(NSArray<PSPromise *> *promises){
         return [[PSPromise alloc] initWithResolver:^(PSResolve resolve) {
+            NSAssert(isArray(promises), @"all can only hand array");
+            
             __block int64_t totalCount = [promises count];
             for (__strong id promise in promises) {
                 if (!isPromise(promise)) {
                     promise = PSPromise.resolve(promise);
                 }
                 [promise pipe:^(id result) {
-                    if (isRejected(result)) {
+                    if (isError(result)) {
                         resolve([NSError errorWithDomain:@"cn.yerl.promise"
                                                     code:-1000
                                                 userInfo:@{NSLocalizedFailureReasonErrorKey: @"one of promise in promises was rejected",
@@ -267,6 +293,8 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 
 + (PSPromise *(^)(NSArray<PSPromise *> *))race{
     return ^(NSArray<PSPromise *> *promises){
+        NSAssert(isArray(promises), @"race can only hand array");
+        
         return [[PSPromise alloc] initWithResolver:^(PSResolve resolve) {
             __block int64_t totalCount = [promises count];
             for (__strong id promise in promises) {
@@ -274,7 +302,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                     promise = [[PSPromise alloc] initWithValue:promise];
                 }
                 [promise pipe:^(id result) {
-                    if (!isRejected(result)) {
+                    if (!isError(result)) {
                         resolve(result);
                     }else if (OSAtomicDecrement64(&totalCount) == 0){
                         id errors = [NSMutableArray new];
@@ -293,13 +321,23 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 }
 
 - (PSPromise *(^)(id))then{
-    return ^(id block){
-        return __then(self, dispatch_get_main_queue(), block);
+    return ^id(id value){
+        if (isBlock(value)) {
+            return __then(self, dispatch_get_main_queue(), value);
+        }else if (isPromise(value)){
+            return __then(self, dispatch_get_main_queue(), ^{
+                return value;
+            });
+        }else{
+            NSAssert(NO, @"then can only handle block and promise");
+            return nil;
+        }
     };
 }
 
 - (PSPromise *(^)(id))catch{
     return ^(id block){
+        NSAssert(isBlock(block), @"catch can only handle block.");
         return __catch(self, dispatch_get_main_queue(), block);
     };
 }
@@ -308,14 +346,16 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 @implementation PSPromise (Extension)
 - (PSPromise *(^)(id))thenAsync{
     return ^(id block){
+        NSAssert(isBlock(block), @"thenAsync can only handle block.");
         return __then(self, dispatch_get_global_queue(0, 0), block);
     };
 }
 
 - (PSPromise *(^)(NSTimeInterval, id))thenDelay{
     return ^(NSTimeInterval delaySecond, id block){
+        NSAssert(isBlock(block), @"thenDelay can only handle block.");
         return __pipe(self, ^(id result, PSResolve resolver) {
-            if (isRejected(result)) {
+            if (isError(result)) {
                 resolver(result);
             }else{
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delaySecond * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -330,6 +370,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 
 - (PSPromise *(^)(dispatch_queue_t, id))thenOn{
     return ^(dispatch_queue_t queue, id block){
+        NSAssert(isBlock(block), @"thenOn can only handle block.");
         return __then(self, queue, block);
     };
 }
@@ -337,7 +378,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 - (PSPromise * (^)(void (^)(id, PSResolve)))thenPromise{
     return ^(void (^resolver)(id, PSResolve)){
         return __pipe(self, ^(id result, PSResolve resolve) {
-            if (!isRejected(result)) {
+            if (!isError(result)) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     @try {
                         resolver(result, resolve);
@@ -355,18 +396,21 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 
 - (PSPromise *(^)(id))catchAsync{
     return ^(id block){
+        NSAssert(isBlock(block), @"catchAsync can only handle block.");
         return __catch(self, dispatch_get_global_queue(0, 0), block);
     };
 }
 
 - (PSPromise *(^)(dispatch_queue_t, id))catchOn{
     return ^(dispatch_queue_t queue, id block){
+        NSAssert(isBlock(block), @"catchOn can only handle block.");
         return __catch(self, queue, block);
     };
 }
 
 - (PSPromise *(^)(id))always{
     return ^(id block){
+        NSAssert(isBlock(block), @"always can only handle block.");
         return __pipe(self, ^(id result, PSResolve resolver) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 @try {
@@ -381,14 +425,25 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
 }
 @end
 
+PSPromise *PSPromiseWith(id value){
+    if (isBlock(value)) {
+        return PSPromise.resolve(nil).then(value);
+    }else if (isArray(value)){
+        return PSPromise.all(value);
+    }else {
+        return [[PSPromise alloc] initWithValue:value];
+    }
+}
+
+PSPromise *PSPromiseAsyncWith(id value){
+    if (isBlock(value)) {
+        return PSPromise.resolve(nil).thenAsync(value);
+    }else{
+        return PSPromiseWith(value);
+    }
+}
+
 PSPromise *PSPromiseWithResolve(void (^resolver)(PSResolve)){
     return [[PSPromise alloc] initWithResolver:resolver];
 }
 
-PSPromise *PSPromiseWithBlock(id block){
-    return PSPromise.resolve(nil).then(block);
-}
-
-PSPromise *PSPromiseAsyncWithBlock(id block){
-    return PSPromise.resolve(nil).thenAsync(block);
-}

@@ -42,9 +42,9 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
  */
 @interface PSPromise (CommonJS)
 /**
- *  接受的参数如果是promise对象就直接返回
- *  如果接受的参数是NSError对象，就会生成一个失败态(rejected)的promise，并传递给之后的catch
- *  其它的会生成一个成功态(fulfilled)的promise，并传递给之后的then
+ *  接受的参数如果是Promise对象就直接返回
+ *  如果参数是NSError对象，就会生成一个失败态(rejected)的promise，并传递给之后的catch
+ *  参数为其它的值则生成一个成功态(fulfilled)的promise，并传递给之后的then
  */
 + (PSPromise *(^)(id _Nullable value))resolve;
 
@@ -56,6 +56,7 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
  *    并且第一个rejected传递的值，会传递给A后面的catch。
  */
 + (PSPromise *(^)(NSArray<PSPromise *> *promises))all;
+
 /**
  *  PSPromise.race用来包装一系列的promise对象，返回一个包装后的promise对象，我们称之为R
  *  1. 只要其中的一个promise对象变成成功态(fulfilled)后，这个包装后的R就会变成成功态(fulfilled)，
@@ -66,12 +67,13 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
 
 /**
  *  then接受成功回调
- *  如果promise对象处于预备状态就等待，直到状态改变才开始执行
- *  如果promise对象处于成功态，再用then添加回调就直接调用对应的回调
- *  如果then的返回值不是promise，会作为下一个then的参数
- *  如果then的返回值是一个新的promise对象，那么之后的then添加的操作函数会被托管给新的promise对象
+ *  如果Promise对象处于预备状态就等待，直到状态改变才开始执行
+ *  如果Promise对象处于成功态，再用then添加回调就直接调用对应的回调
+ *  如果then的返回值不是Promise，会作为下一个then的参数
+ *  如果then的返回值是Promise对象，那么之后的then添加的操作函数会被托管给返回的Promise对象
+ *  如果value是一个Promise,则认为then的返回值是Promise对象
  */
-- (PSPromise *(^)(id block))then;
+- (PSPromise *(^)(id value))then;
 
 /**
  *  catch接受失败回调
@@ -87,20 +89,35 @@ typedef NS_ENUM(NSUInteger, PSPromiseState) {
  *  标准接口之外添加的便利方法
  */
 @interface PSPromise (Extension)
-- (PSPromise *(^)(id block))thenAsync;
-- (PSPromise *(^)(NSTimeInterval delaySecond, id block))thenDelay;
-- (PSPromise *(^)(dispatch_queue_t queue, id block))thenOn;
-- (PSPromise *(^)(void (^resolver)(id result, PSResolve resolve)))thenPromise;
-
-- (PSPromise *(^)(id block))catchAsync;
-- (PSPromise *(^)(dispatch_queue_t queue, id block))catchOn;
-
-- (PSPromise *(^)(id block))always;
+- (PSPromise *(^)(id block))thenAsync;/**< 异步执行 */
+- (PSPromise *(^)(NSTimeInterval delaySecond, id block))thenDelay;/**< 延迟执行 */
+- (PSPromise *(^)(dispatch_queue_t queue, id block))thenOn;/**< 在指定线程执行 */
+- (PSPromise *(^)(void (^resolver)(id result, PSResolve resolve)))thenPromise;/**< 需要回调的任务 */
+- (PSPromise *(^)(id block))catchAsync;/**< 异步处理错误 */
+- (PSPromise *(^)(dispatch_queue_t queue, id block))catchOn;/**< 在指定线程处理错误 */
+- (PSPromise *(^)(id block))always;/**< 无论错误还是正确都执行 */
 @end
-
+/**
+ *  创建Promise对象
+ *
+ *  如果value是block，则创建一个Pending状态的Promise并同步执行block
+ *  如果value是Promise, 则直接返回Promise
+ *  如果vlaue是数组，则返回Promise.all封装的Promise
+ *  如果vlaue是NSError对象，则返回一个Rejected状态的Promise
+ *  如果vlaue是其它的对象，则返回一个Fulfilled状态的Promise
+ */
+FOUNDATION_EXPORT PSPromise *PSPromiseWith(_Nullable id value);
+/**
+ *  创建Promise对象
+ *
+ *  如果value是block，则创建一个Pending状态的Promise并异步执行block
+ *  其它同上
+ */
+FOUNDATION_EXPORT PSPromise *PSPromiseAsyncWith(_Nullable id value);
+/**
+ *  创建一个需要回调的Promise
+ */
 FOUNDATION_EXPORT PSPromise *PSPromiseWithResolve(void (^)(PSResolve resolve));
-FOUNDATION_EXPORT PSPromise *PSPromiseWithBlock(id block);
-FOUNDATION_EXPORT PSPromise *PSPromiseAsyncWithBlock(id block);
 NS_ASSUME_NONNULL_END
 
 
