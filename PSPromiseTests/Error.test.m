@@ -20,7 +20,7 @@
 - (void)testThen1 {
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         @throw NSErrorMake(nil, @"Error");
     }).then(^{
         XCTAssert(NO, @"这里不应该执行:%@", @"123");
@@ -38,7 +38,7 @@
 - (void)testThen2{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         return @"aaa";
     }).thenAsync(^{
         @throw NSErrorMake(nil, @"Error");
@@ -58,7 +58,7 @@
 - (void)testThen3{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         return @"aaa";
     }).thenPromise(^(id result, PSResolve resolve){
         @throw NSErrorMake(nil, @"Error");
@@ -78,7 +78,7 @@
 - (void)testThen4{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         return @"aaa";
     }).thenOn(dispatch_get_global_queue(0, 0), ^{
         @throw NSErrorMake(nil, @"Error");
@@ -98,7 +98,7 @@
 - (void)testCatch1{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         @throw NSErrorMake(nil, @"abc");
     }).catch(^{
         @throw NSErrorMake(nil, @"Error");
@@ -118,7 +118,7 @@
 - (void)testCatch2{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         @throw NSErrorMake(nil, @"abc");
     }).catchAsync(^{
         @throw NSErrorMake(nil, @"Error");
@@ -138,7 +138,7 @@
 - (void)testCatch3{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         @throw NSErrorMake(nil, @"abc");
     }).catchOn(dispatch_get_global_queue(0, 0), ^{
         @throw NSErrorMake(nil, @"Error");
@@ -158,7 +158,7 @@
 - (void)testAlways{
     id ex = [self expectationWithDescription:@""];
     
-    PSPromiseWithBlock(^{
+    PSPromiseWith(^{
         @throw NSErrorMake(nil, @"abc");
     }).always(^{
         @throw NSErrorMake(nil, @"Error");

@@ -24,17 +24,17 @@ FOUNDATION_EXPORT NSError *NSErrorMake(id _Nullable internalErrors, NSString *lo
 typedef void (^PSResolve)(id __nullable result);
 
 typedef NS_ENUM(NSUInteger, PSPromiseState) {
-    PSPromiseStatePending = 1 << 0,
-    PSPromiseStateFulfilled = 1 << 1,
-    PSPromiseStateRejected = 1 << 2
+    PSPromiseStatePending = 1 << 0, /**< 待执行状态 */
+    PSPromiseStateFulfilled = 1 << 1, /**< 成功状态 */
+    PSPromiseStateRejected = 1 << 2 /**< 失败状态 */
 };
 
 @interface PSPromise<ValueType> : NSObject
 - (instancetype)init PSPROMISE_API_UNAVAILABLE("不允许直接实例化");
 + (instancetype)new PSPROMISE_API_UNAVAILABLE("不允许直接实例化");
 
-@property (nonatomic, readonly, assign) PSPromiseState state;
-@property (nonatomic, readonly) id value;
+@property (nonatomic, readonly, assign) PSPromiseState state; /**< Promise当前状态 */
+@property (nonatomic, readonly) id value; /**< Promise的执行结果，失败时，执行结果为NSError对象 */
 @end
 
 /**
