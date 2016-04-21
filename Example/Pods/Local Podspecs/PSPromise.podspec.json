@@ -1,0 +1,20 @@
+{
+  "name": "PSPromise",
+  "version": "1.0.0",
+  "summary": "A short description of PSPromise.",
+  "description": "PSPromise is powerful.",
+  "homepage": "https://github.com/Poi-Son/PSPromise",
+  "license": "MIT",
+  "authors": {
+    "PoiSon": "git@yerl.cn"
+  },
+  "source": {
+    "git": "https://github.com/Poi-Son/PSPromise.git",
+    "tag": "1.0.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "PSPromise/Classes/**/*",
+  "public_header_files": "PSPromise/Classes/**/*.h"
+}

@@ -1,0 +1,11 @@
+use_frameworks!
+
+target 'PSPromise_Example', :exclusive => true do
+  pod 'PSPromise', :path => '../'
+end
+
+target 'PSPromise_Tests', :exclusive => true do
+  pod 'PSPromise', :path => '../'
+
+  
+end

@@ -279,7 +279,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                                                            NSLocalizedDescriptionKey: result}]);
                     }else if (OSAtomicDecrement64(&totalCount) == 0){
                         id results = [NSMutableArray new];
-                        for (id promise in promises) {
+                        for (PSPromise *promise in promises) {
                             id value = isPromise(promise) ? [promise value] : promise;
                             [results addObject:value ?: [NSNull null]];
                         }
@@ -306,7 +306,7 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                         resolve(result);
                     }else if (OSAtomicDecrement64(&totalCount) == 0){
                         id errors = [NSMutableArray new];
-                        for (id promise in promises) {
+                        for (PSPromise *promise in promises) {
                             [errors addObject:isPromise(promise) ? [promise value] : promise];
                         }
                         resolve([NSError errorWithDomain:@"cn.yerl.promise"
