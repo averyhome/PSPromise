@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = "PSPromise"
   s.version          = "1.0.0"
-  s.summary          = "A short description of PSPromise."
+  s.summary          = "Promise for iOS."
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-  PSPromise is powerful.
+  PSPromise是Promise模式的iOS实现，用于解决回调金字塔、代码顺序混乱等问题.
                        DESC
 
   s.homepage         = "https://github.com/Poi-Son/PSPromise"
