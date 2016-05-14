@@ -1,6 +1,0 @@
-framework module PSPromise {
-  umbrella header "PSPromise-umbrella.h"
-
-  export *
-  module * { export * }
-}

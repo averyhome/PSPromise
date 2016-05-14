@@ -1,11 +1,11 @@
 use_frameworks!
 
-target 'PSPromise_Example', :exclusive => true do
-  pod 'PSPromise', :path => '../'
-end
-
-target 'PSPromise_Tests', :exclusive => true do
+target 'PSPromise_Example' do
   pod 'PSPromise', :path => '../'
 
-  
+  target 'PSPromise_Tests' do
+    inherit! :search_paths
+
+    
+  end
 end
