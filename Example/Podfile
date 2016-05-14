@@ -5,7 +5,5 @@ target 'PSPromise_Example' do
 
   target 'PSPromise_Tests' do
     inherit! :search_paths
-
-    
   end
 end
