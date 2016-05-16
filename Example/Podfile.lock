@@ -1,5 +1,5 @@
 PODS:
-  - PSPromise (1.0.0)
+  - PSPromise (1.0.1)
 
 DEPENDENCIES:
   - PSPromise (from `../`)
@@ -9,7 +9,7 @@ EXTERNAL SOURCES:
     :path: ../
 
 SPEC CHECKSUMS:
-  PSPromise: 6c1edac12d46d259ecaf9cfc0b8057576d5df7c3
+  PSPromise: 249dcf1d2161fe32ade66bf80bf393b65fd91f35
 
 PODFILE CHECKSUM: f65bf80fa2f9e254c70273ee753dfb0b9adf4998
 

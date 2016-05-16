@@ -275,8 +275,8 @@ static inline PSPromise *__catch(PSPromise *self, dispatch_queue_t queue, id blo
                     if (isError(result)) {
                         resolve([NSError errorWithDomain:@"cn.yerl.promise"
                                                     code:-1000
-                                                userInfo:@{NSLocalizedFailureReasonErrorKey: @"one of promise in promises was rejected",
-                                                           NSLocalizedDescriptionKey: result}]);
+                                                userInfo:@{NSLocalizedDescriptionKey: [result localizedDescription],
+                                                           PSPromiseInternalErrorsKey: result}]);
                     }else if (OSAtomicDecrement64(&totalCount) == 0){
                         id results = [NSMutableArray new];
                         for (PSPromise *promise in promises) {
